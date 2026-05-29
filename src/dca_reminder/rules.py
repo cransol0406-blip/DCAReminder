@@ -14,7 +14,7 @@ class TriggerType(StrEnum):
 
 TRIGGER_LABELS = {
     TriggerType.FIRST_DAILY_DROP: "第一次定投：单日下跌超过1.5%",
-    TriggerType.MONTH_END_FALLBACK: "第一次定投：本月未触发，最后交易日开盘前提醒",
+    TriggerType.MONTH_END_FALLBACK: "第一次定投：本月未触发，最后交易日兜底提醒",
     TriggerType.SECOND_MONTHLY_DROP: "第二次定投：单月跌幅超过5%",
     TriggerType.THIRD_MA_DISCOUNT: "第三次定投：价格低于MA20和MA50的15%及以上",
 }

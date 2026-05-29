@@ -40,9 +40,9 @@ def get_market_window(now: datetime | None = None) -> MarketWindow:
     month_end = next_month - pd.Timedelta(days=1)
     month_schedule = nyse.schedule(start_date=month_start.isoformat(), end_date=month_end.isoformat())
     last_trading_day = month_schedule.index[-1].date()
-    is_fallback = (
-        today == last_trading_day
-        and time(9, 0) <= now_et.time() < time(9, 30)
+    is_fallback = today == last_trading_day and (
+        time(9, 0) <= now_et.time() < time(9, 30)
+        or is_regular
     )
 
     return MarketWindow(True, is_regular, is_fallback, month_key)
