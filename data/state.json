@@ -1,3 +1,22 @@
 {
-  "symbols": {}
+  "symbols": {
+    "QQQ": {
+      "months": {
+        "2026-05": {
+          "first_trading_day_open": 669.1599731445312,
+          "sent_messages": [],
+          "sent_triggers": []
+        }
+      }
+    },
+    "SPY": {
+      "months": {
+        "2026-05": {
+          "first_trading_day_open": 721.25,
+          "sent_messages": [],
+          "sent_triggers": []
+        }
+      }
+    }
+  }
 }
