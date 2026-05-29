@@ -4,8 +4,15 @@
       "months": {
         "2026-05": {
           "first_trading_day_open": 669.1599731445312,
-          "sent_messages": [],
-          "sent_triggers": []
+          "sent_messages": [
+            {
+              "sent_at": "2026-05-29T11:22:13.763278-04:00",
+              "trigger_type": "month_end_fallback"
+            }
+          ],
+          "sent_triggers": [
+            "month_end_fallback"
+          ]
         }
       }
     },
@@ -13,8 +20,15 @@
       "months": {
         "2026-05": {
           "first_trading_day_open": 721.25,
-          "sent_messages": [],
-          "sent_triggers": []
+          "sent_messages": [
+            {
+              "sent_at": "2026-05-29T11:22:13.763278-04:00",
+              "trigger_type": "month_end_fallback"
+            }
+          ],
+          "sent_triggers": [
+            "month_end_fallback"
+          ]
         }
       }
     }
