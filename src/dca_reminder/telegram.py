@@ -18,8 +18,8 @@ def build_message(trigger: Trigger, trigger_count: int) -> str:
             f"月初首个交易日开盘：{snapshot.month_open:.2f}",
             f"MA20：{snapshot.ma20:.2f}",
             f"MA50：{snapshot.ma50:.2f}",
-            f"日跌幅：{snapshot.daily_drop:.2%}",
-            f"月跌幅：{snapshot.monthly_drop:.2%}",
+            f"日涨跌幅：{snapshot.daily_drop:.2%}",
+            f"月涨跌幅：{snapshot.monthly_drop:.2%}",
             f"本月触发次数：{trigger_count}/3",
             f"时间戳：{timestamp}",
         ]

@@ -31,4 +31,5 @@ def test_message_contains_updated_monthly_trigger_count():
     message = build_message(_trigger(TriggerType.SECOND_MONTHLY_DROP, snapshot), 2)
     assert "本月触发次数：2/3" in message
     assert "标的：SPY" in message
-    assert "月跌幅：-10.00%" in message
+    assert "日涨跌幅：-10.00%" in message
+    assert "月涨跌幅：-10.00%" in message
