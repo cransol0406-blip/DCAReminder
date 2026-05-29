@@ -1,0 +1,27 @@
+[project]
+name = "dca-reminder"
+version = "0.1.0"
+description = "SPY/QQQ Telegram DCA reminder for GitHub Actions"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "pandas-market-calendars>=4.4",
+    "requests>=2.32",
+    "yfinance>=0.2.40",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
