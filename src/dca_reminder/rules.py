@@ -5,18 +5,60 @@ from datetime import datetime
 from enum import StrEnum
 
 
-class TriggerType(StrEnum):
-    FIRST_DAILY_DROP = "first_daily_drop"
-    MONTH_END_FALLBACK = "month_end_fallback"
-    SECOND_MONTHLY_DROP = "second_monthly_drop"
-    THIRD_MA_DISCOUNT = "third_ma_discount"
+class SignalType(StrEnum):
+    MA50_DEVIATION = "ma50_deviation"
+    MA20_DEVIATION = "ma20_deviation"
+    MONTHLY_DROP = "monthly_drop"
+    DAILY_DROP = "daily_drop"
+    WEEKLY_BASE = "weekly_base"
 
 
-TRIGGER_LABELS = {
-    TriggerType.FIRST_DAILY_DROP: "第一次定投：单日下跌超过1.5%",
-    TriggerType.MONTH_END_FALLBACK: "第一次定投：本月未触发，最后交易日兜底提醒",
-    TriggerType.SECOND_MONTHLY_DROP: "第二次定投：单月跌幅超过5%",
-    TriggerType.THIRD_MA_DISCOUNT: "第三次定投：价格低于MA20和MA50的15%及以上",
+SIGNAL_PRIORITY = {
+    SignalType.MA50_DEVIATION: 10,
+    SignalType.MA20_DEVIATION: 20,
+    SignalType.MONTHLY_DROP: 30,
+    SignalType.DAILY_DROP: 40,
+    SignalType.WEEKLY_BASE: 50,
+}
+
+
+SIGNAL_LABELS = {
+    SignalType.MA50_DEVIATION: "50MA偏离提醒",
+    SignalType.MA20_DEVIATION: "20MA偏离提醒",
+    SignalType.MONTHLY_DROP: "单月下跌提醒",
+    SignalType.DAILY_DROP: "单日下跌提醒",
+    SignalType.WEEKLY_BASE: "每周基础定投提醒",
+}
+
+
+@dataclass(frozen=True)
+class StrategyParams:
+    symbol: str
+    daily_drop_pct: float
+    monthly_drop_pct: float
+    ma20_deviation_pct: float
+    ma50_deviation_pct: float
+
+    @property
+    def daily_factor(self) -> float:
+        return 1.0 - self.daily_drop_pct
+
+    @property
+    def monthly_factor(self) -> float:
+        return 1.0 - self.monthly_drop_pct
+
+    @property
+    def ma20_factor(self) -> float:
+        return 1.0 - self.ma20_deviation_pct
+
+    @property
+    def ma50_factor(self) -> float:
+        return 1.0 - self.ma50_deviation_pct
+
+
+STRATEGY_PARAMS = {
+    "SPY": StrategyParams("SPY", 0.015, 0.05, 0.08, 0.12),
+    "QQQ": StrategyParams("QQQ", 0.02, 0.07, 0.12, 0.16),
 }
 
 
@@ -24,69 +66,132 @@ TRIGGER_LABELS = {
 class MarketSnapshot:
     symbol: str
     timestamp: datetime
-    current_price: float
+    price: float
     previous_close: float
-    month_open: float
+    previous_month_close: float
     ma20: float
     ma50: float
 
     @property
-    def daily_drop(self) -> float:
-        return self.current_price / self.previous_close - 1.0
+    def daily_change(self) -> float:
+        return self.price / self.previous_close - 1.0
 
     @property
-    def monthly_drop(self) -> float:
-        return self.current_price / self.month_open - 1.0
+    def monthly_change(self) -> float:
+        return self.price / self.previous_month_close - 1.0
 
 
 @dataclass(frozen=True)
-class Trigger:
-    trigger_type: TriggerType
-    label: str
-    snapshot: MarketSnapshot
+class SignalResult:
+    signal_type: SignalType
+    count: int | None
+    trigger_price: float | None
+    next_trigger_price: float | None
+    description: str
+
+    @property
+    def label(self) -> str:
+        return SIGNAL_LABELS[self.signal_type]
 
 
-def evaluate_triggers(
+def evaluate_intraday_signals(
     snapshot: MarketSnapshot,
-    sent_triggers: set[str],
-    is_month_end_fallback_window: bool,
-) -> list[Trigger]:
-    triggers: list[Trigger] = []
-    first_trigger_names = {
-        TriggerType.FIRST_DAILY_DROP.value,
-        TriggerType.MONTH_END_FALLBACK.value,
-    }
+    params: StrategyParams,
+    day_state: dict,
+    month_state: dict,
+    week_state: dict,
+    is_weekly_open_reminder_window: bool,
+) -> list[SignalResult]:
+    signals: list[SignalResult] = []
 
-    daily_first_triggered = (
-        TriggerType.FIRST_DAILY_DROP.value not in sent_triggers
-        and TriggerType.MONTH_END_FALLBACK.value not in sent_triggers
-        and snapshot.daily_drop <= -0.015
-    )
-    if daily_first_triggered:
-        triggers.append(_trigger(TriggerType.FIRST_DAILY_DROP, snapshot))
+    if is_weekly_open_reminder_window and not week_state.get("weekly_base_sent"):
+        signals.append(
+            SignalResult(
+                signal_type=SignalType.WEEKLY_BASE,
+                count=None,
+                trigger_price=None,
+                next_trigger_price=None,
+                description="本周第一个实际交易日开盘提醒",
+            )
+        )
 
-    if (
-        not daily_first_triggered
-        and is_month_end_fallback_window
-        and sent_triggers.isdisjoint(first_trigger_names)
-    ):
-        triggers.append(_trigger(TriggerType.MONTH_END_FALLBACK, snapshot))
+    daily_prices = _float_list(day_state.get("daily_trigger_prices", []))
+    daily_base = daily_prices[-1] if daily_prices else snapshot.previous_close
+    daily_trigger_line = daily_base * params.daily_factor
+    if _at_or_below_price_line(snapshot.price, daily_trigger_line):
+        count = len(daily_prices) + 1
+        signals.append(
+            SignalResult(
+                signal_type=SignalType.DAILY_DROP,
+                count=count,
+                trigger_price=daily_trigger_line,
+                next_trigger_price=daily_trigger_line * params.daily_factor,
+                description=f"第 {count} 次；当前价低于单日阶梯线 {daily_trigger_line:.2f}",
+            )
+        )
 
-    if (
-        TriggerType.SECOND_MONTHLY_DROP.value not in sent_triggers
-        and snapshot.monthly_drop <= -0.05
-    ):
-        triggers.append(_trigger(TriggerType.SECOND_MONTHLY_DROP, snapshot))
+    monthly_prices = _float_list(month_state.get("monthly_trigger_prices", []))
+    monthly_base = monthly_prices[-1] if monthly_prices else float(month_state["monthly_base_close"])
+    monthly_trigger_line = monthly_base * params.monthly_factor
+    if _at_or_below_price_line(snapshot.price, monthly_trigger_line):
+        count = len(monthly_prices) + 1
+        signals.append(
+            SignalResult(
+                signal_type=SignalType.MONTHLY_DROP,
+                count=count,
+                trigger_price=monthly_trigger_line,
+                next_trigger_price=monthly_trigger_line * params.monthly_factor,
+                description=f"第 {count} 次；当前价低于月跌阶梯线 {monthly_trigger_line:.2f}",
+            )
+        )
 
-    if (
-        TriggerType.THIRD_MA_DISCOUNT.value not in sent_triggers
-        and snapshot.current_price <= snapshot.ma20 * 0.85
-        and snapshot.current_price <= snapshot.ma50 * 0.85
-    ):
-        triggers.append(_trigger(TriggerType.THIRD_MA_DISCOUNT, snapshot))
+    if not month_state.get("ma20_deviation_sent") and _at_or_below_price_line(snapshot.price, snapshot.ma20 * params.ma20_factor):
+        signals.append(
+            SignalResult(
+                signal_type=SignalType.MA20_DEVIATION,
+                count=None,
+                trigger_price=snapshot.price,
+                next_trigger_price=None,
+                description=f"当前价低于MA20阈值 {snapshot.ma20 * params.ma20_factor:.2f}",
+            )
+        )
 
-    return triggers
+    if not month_state.get("ma50_deviation_sent") and _at_or_below_price_line(snapshot.price, snapshot.ma50 * params.ma50_factor):
+        signals.append(
+            SignalResult(
+                signal_type=SignalType.MA50_DEVIATION,
+                count=None,
+                trigger_price=snapshot.price,
+                next_trigger_price=None,
+                description=f"当前价低于MA50阈值 {snapshot.ma50 * params.ma50_factor:.2f}",
+            )
+        )
+
+    return sorted(signals, key=lambda signal: SIGNAL_PRIORITY[signal.signal_type])
 
 
-def _trigger(trigger_type: TriggerType, snapshot: MarketSnapshot) -> Trigger:
-    return Trigger(trigger_type=trigger_type, label=TRIGGER_LABELS[trigger_type], snapshot=snapshot)
+def count_confirmed_drop_levels(price: float, initial_base: float, drop_pct: float) -> int:
+    count = 0
+    next_line = initial_base * (1.0 - drop_pct)
+    while _at_or_below_price_line(price, next_line):
+        count += 1
+        next_line *= 1.0 - drop_pct
+    return count
+
+
+def next_daily_trigger_price(previous_close: float, params: StrategyParams) -> float:
+    return previous_close * params.daily_factor
+
+
+def next_monthly_trigger_price(month_state: dict, params: StrategyParams) -> float:
+    monthly_prices = _float_list(month_state.get("monthly_trigger_prices", []))
+    base = monthly_prices[-1] if monthly_prices else float(month_state["monthly_base_close"])
+    return base * params.monthly_factor
+
+
+def _float_list(values: list) -> list[float]:
+    return [float(value) for value in values]
+
+
+def _at_or_below_price_line(price: float, line: float) -> bool:
+    return price <= round(line, 2) + 1e-9

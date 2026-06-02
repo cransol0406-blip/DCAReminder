@@ -3,105 +3,169 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from dca_reminder.rules import MarketSnapshot, TriggerType, evaluate_triggers
+from dca_reminder.rules import (
+    STRATEGY_PARAMS,
+    MarketSnapshot,
+    SignalType,
+    count_confirmed_drop_levels,
+    evaluate_intraday_signals,
+)
 
 
 ET = ZoneInfo("America/New_York")
 
 
-def snapshot(
-    current_price: float = 98.5,
-    previous_close: float = 100.0,
-    month_open: float = 105.0,
-    ma20: float = 100.0,
-    ma50: float = 100.0,
-) -> MarketSnapshot:
+def snapshot(symbol: str = "SPY", price: float = 100.0) -> MarketSnapshot:
     return MarketSnapshot(
-        symbol="SPY",
-        timestamp=datetime(2026, 5, 29, 10, 0, tzinfo=ET),
-        current_price=current_price,
-        previous_close=previous_close,
-        month_open=month_open,
-        ma20=ma20,
-        ma50=ma50,
+        symbol=symbol,
+        timestamp=datetime(2026, 6, 2, 10, 0, tzinfo=ET),
+        price=price,
+        previous_close=100.0,
+        previous_month_close=100.0,
+        ma20=100.0,
+        ma50=100.0,
     )
 
 
-def trigger_values(triggers):
-    return [trigger.trigger_type.value for trigger in triggers]
+def signal_types(signals):
+    return [signal.signal_type for signal in signals]
 
 
-def test_daily_drop_triggers_at_boundary():
-    triggers = evaluate_triggers(snapshot(current_price=98.5), set(), False)
-    assert TriggerType.FIRST_DAILY_DROP.value in trigger_values(triggers)
+def test_spy_daily_drop_ladder_uses_1_5_percent_steps():
+    params = STRATEGY_PARAMS["SPY"]
+    day_state = {"daily_trigger_prices": []}
+    month_state = {"monthly_base_close": 100.0}
+
+    signals = evaluate_intraday_signals(snapshot("SPY", 98.50), params, day_state, month_state, {}, False)
+    assert SignalType.DAILY_DROP in signal_types(signals)
+    daily = next(signal for signal in signals if signal.signal_type == SignalType.DAILY_DROP)
+    assert daily.count == 1
+    assert round(daily.next_trigger_price, 2) == 97.02
+
+    day_state = {"daily_trigger_prices": [98.50]}
+    signals = evaluate_intraday_signals(snapshot("SPY", 97.02), params, day_state, month_state, {}, False)
+    daily = next(signal for signal in signals if signal.signal_type == SignalType.DAILY_DROP)
+    assert daily.count == 2
+    assert round(daily.next_trigger_price, 2) == 95.57
 
 
-def test_daily_drop_does_not_trigger_above_boundary():
-    triggers = evaluate_triggers(snapshot(current_price=98.51), set(), False)
-    assert TriggerType.FIRST_DAILY_DROP.value not in trigger_values(triggers)
+def test_qqq_daily_drop_ladder_uses_2_percent_steps():
+    params = STRATEGY_PARAMS["QQQ"]
+    day_state = {"daily_trigger_prices": [98.00]}
+    month_state = {"monthly_base_close": 100.0}
+
+    signals = evaluate_intraday_signals(snapshot("QQQ", 96.04), params, day_state, month_state, {}, False)
+    daily = next(signal for signal in signals if signal.signal_type == SignalType.DAILY_DROP)
+    assert daily.count == 2
+    assert round(daily.next_trigger_price, 2) == 94.12
 
 
-def test_monthly_drop_triggers_at_boundary():
-    triggers = evaluate_triggers(
-        snapshot(current_price=95.0, previous_close=100.0, month_open=100.0),
-        set(),
+def test_monthly_drop_ladder_uses_symbol_thresholds():
+    spy = evaluate_intraday_signals(
+        snapshot("SPY", 95.00),
+        STRATEGY_PARAMS["SPY"],
+        {},
+        {"monthly_base_close": 100.0},
+        {},
         False,
     )
-    assert TriggerType.SECOND_MONTHLY_DROP.value in trigger_values(triggers)
+    assert SignalType.MONTHLY_DROP in signal_types(spy)
 
-
-def test_monthly_drop_does_not_trigger_above_boundary():
-    triggers = evaluate_triggers(
-        snapshot(current_price=95.01, previous_close=100.0, month_open=100.0),
-        set(),
+    qqq = evaluate_intraday_signals(
+        snapshot("QQQ", 93.00),
+        STRATEGY_PARAMS["QQQ"],
+        {},
+        {"monthly_base_close": 100.0},
+        {},
         False,
     )
-    assert TriggerType.SECOND_MONTHLY_DROP.value not in trigger_values(triggers)
+    monthly = next(signal for signal in qqq if signal.signal_type == SignalType.MONTHLY_DROP)
+    assert monthly.count == 1
+    assert round(monthly.next_trigger_price, 2) == 86.49
 
 
-def test_ma_discount_requires_both_ma20_and_ma50():
-    triggers = evaluate_triggers(
-        snapshot(current_price=84.0, ma20=100.0, ma50=98.0),
-        set(),
+def test_rebound_to_same_daily_ladder_does_not_repeat():
+    params = STRATEGY_PARAMS["SPY"]
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 98.50),
+        params,
+        {"daily_trigger_prices": [98.50]},
+        {"monthly_base_close": 100.0},
+        {},
         False,
     )
-    assert TriggerType.THIRD_MA_DISCOUNT.value not in trigger_values(triggers)
+    assert SignalType.DAILY_DROP not in signal_types(signals)
 
-    triggers = evaluate_triggers(
-        snapshot(current_price=84.0, ma20=100.0, ma50=100.0),
-        set(),
+
+def test_ma20_and_ma50_are_independent_monthly_once_signals():
+    params = STRATEGY_PARAMS["SPY"]
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 88.00),
+        params,
+        {},
+        {"monthly_base_close": 100.0},
+        {},
         False,
     )
-    assert TriggerType.THIRD_MA_DISCOUNT.value in trigger_values(triggers)
+    assert SignalType.MA20_DEVIATION in signal_types(signals)
+    assert SignalType.MA50_DEVIATION in signal_types(signals)
 
-
-def test_sent_triggers_are_not_repeated():
-    triggers = evaluate_triggers(
-        snapshot(current_price=80.0, previous_close=100.0, month_open=100.0),
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 80.00),
+        params,
+        {},
         {
-            TriggerType.FIRST_DAILY_DROP.value,
-            TriggerType.SECOND_MONTHLY_DROP.value,
-            TriggerType.THIRD_MA_DISCOUNT.value,
+            "monthly_base_close": 100.0,
+            "ma20_deviation_sent": True,
+            "ma50_deviation_sent": True,
         },
+        {},
         False,
     )
-    assert triggers == []
+    assert SignalType.MA20_DEVIATION not in signal_types(signals)
+    assert SignalType.MA50_DEVIATION not in signal_types(signals)
 
 
-def test_month_end_fallback_only_when_first_trigger_not_sent():
-    triggers = evaluate_triggers(snapshot(current_price=100.0), set(), True)
-    assert TriggerType.MONTH_END_FALLBACK.value in trigger_values(triggers)
-
-    triggers = evaluate_triggers(
-        snapshot(current_price=100.0),
-        {TriggerType.FIRST_DAILY_DROP.value},
+def test_weekly_base_triggers_once_in_weekly_open_window():
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 101.0),
+        STRATEGY_PARAMS["SPY"],
+        {},
+        {"monthly_base_close": 100.0},
+        {"weekly_base_sent": False},
         True,
     )
-    assert TriggerType.MONTH_END_FALLBACK.value not in trigger_values(triggers)
+    assert SignalType.WEEKLY_BASE in signal_types(signals)
+
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 101.0),
+        STRATEGY_PARAMS["SPY"],
+        {},
+        {"monthly_base_close": 100.0},
+        {"weekly_base_sent": True},
+        True,
+    )
+    assert SignalType.WEEKLY_BASE not in signal_types(signals)
 
 
-def test_daily_drop_wins_over_month_end_fallback_for_first_trigger():
-    triggers = evaluate_triggers(snapshot(current_price=98.5), set(), True)
-    values = trigger_values(triggers)
-    assert TriggerType.FIRST_DAILY_DROP.value in values
-    assert TriggerType.MONTH_END_FALLBACK.value not in values
+def test_multi_signal_order_uses_priority():
+    signals = evaluate_intraday_signals(
+        snapshot("SPY", 80.0),
+        STRATEGY_PARAMS["SPY"],
+        {},
+        {"monthly_base_close": 100.0},
+        {"weekly_base_sent": False},
+        True,
+    )
+    assert signal_types(signals) == [
+        SignalType.MA50_DEVIATION,
+        SignalType.MA20_DEVIATION,
+        SignalType.MONTHLY_DROP,
+        SignalType.DAILY_DROP,
+        SignalType.WEEKLY_BASE,
+    ]
+
+
+def test_confirmed_drop_level_count_uses_ideal_ladder():
+    assert count_confirmed_drop_levels(95.57, 100.0, 0.015) == 3
+    assert count_confirmed_drop_levels(94.12, 100.0, 0.02) == 3
