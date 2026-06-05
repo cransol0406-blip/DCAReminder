@@ -18,7 +18,7 @@
           "intraday_signals": []
         },
         "2026-06-05": {
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             725.7977856445312,
             711.2818299316406
@@ -101,7 +101,7 @@
           "intraday_signals": []
         },
         "2026-06-05": {
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             745.7336764526367
           ],
