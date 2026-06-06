@@ -40,6 +40,12 @@ def build_intraday_message(
             f"- 50MA偏离提醒：{_yes_no(SignalType.MA50_DEVIATION in signal_by_type)}",
             f"- 每周基础定投提醒：{_yes_no(SignalType.WEEKLY_BASE in signal_by_type)}",
             "",
+            "阶梯阈值：",
+            f"- 单日本次触发价：{_price_text(signal_by_type.get(SignalType.DAILY_DROP), 'trigger_price')}",
+            f"- 单日下一阶梯价：{_price_text(signal_by_type.get(SignalType.DAILY_DROP), 'next_trigger_price')}",
+            f"- 单月本次触发价：{_price_text(signal_by_type.get(SignalType.MONTHLY_DROP), 'trigger_price')}",
+            f"- 单月下一阶梯价：{_price_text(signal_by_type.get(SignalType.MONTHLY_DROP), 'next_trigger_price')}",
+            "",
             "触发说明：",
             f"- 单日下跌阈值：较上一单日基准跌超 {params.daily_drop_pct:.1%}",
             f"- 单月下跌阈值：较上月月末收盘价或上一次月跌触发价跌超 {params.monthly_drop_pct:.1%}",
@@ -92,6 +98,45 @@ def build_daily_summary_message(
             "- 单日阶梯价仅当日有效，收盘后失效；",
             "- 明日单日初始触发价按今日收盘价重新计算；",
             "- 月跌阶梯价在本月内继续有效。",
+        ]
+    )
+
+
+def build_weekly_summary_message(
+    snapshot: MarketSnapshot,
+    params: StrategyParams,
+    week_key: str,
+    week_state: dict,
+    next_week_daily_trigger_price: float,
+    next_monthly_trigger_price: float,
+) -> str:
+    return "\n".join(
+        [
+            f"【{snapshot.symbol} 每周定投总结】",
+            "",
+            f"周次：{week_key}",
+            *_time_lines(snapshot),
+            "",
+            f"本周收盘价：{snapshot.price:.2f}",
+            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
+            "",
+            "本周提醒统计：",
+            f"- 每周基础提醒：{int(week_state.get('weekly_base_count', 0))} 次",
+            f"- 单日下跌提醒：{int(week_state.get('daily_drop_count', 0))} 次",
+            f"- 单月下跌提醒：{int(week_state.get('monthly_drop_count', 0))} 次",
+            f"- 20MA偏离提醒：{_yes_no(bool(week_state.get('ma20_deviation_sent')))}",
+            f"- 50MA偏离提醒：{_yes_no(bool(week_state.get('ma50_deviation_sent')))}",
+            "",
+            "下一提醒线：",
+            f"- 下周单日初始触发价：{next_week_daily_trigger_price:.2f}",
+            f"- 本月月跌下一阶梯价：{next_monthly_trigger_price:.2f}",
+            "",
+            "备注：",
+            "- 每周总结在本周最后一个交易日收盘后发送；",
+            "- 下周单日初始触发价按本周最后收盘价计算；",
+            "- 月跌阶梯价仍按本月状态继续有效。",
         ]
     )
 
@@ -155,6 +200,15 @@ def _count_or_none(count: int) -> str:
 
 def _yes_no(value: bool) -> str:
     return "是" if value else "否"
+
+
+def _price_text(signal: SignalResult | None, attr_name: str) -> str:
+    if signal is None:
+        return "未触发"
+    value = getattr(signal, attr_name)
+    if value is None:
+        return "不适用"
+    return f"{value:.2f}"
 
 
 def _change_line(label: str, change: float, base_price: float) -> str:

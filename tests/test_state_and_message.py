@@ -15,6 +15,7 @@ from dca_reminder.telegram import (
     build_daily_summary_message,
     build_intraday_message,
     build_monthly_summary_message,
+    build_weekly_summary_message,
 )
 
 
@@ -47,6 +48,7 @@ def test_state_records_are_independent_by_symbol_day_month_week():
     apply_sent_signals(spy_day, spy_month, spy_week, [signal], "2026-06-02T10:00:00-04:00")
 
     assert spy_month["daily_drop_count"] == 1
+    assert spy_week["daily_drop_count"] == 1
     assert qqq_month["daily_drop_count"] == 0
 
 
@@ -64,6 +66,10 @@ def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():
     assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
     assert "50MA偏离提醒：是" in message
     assert "单日下跌提醒：第 1 次" in message
+    assert "阶梯阈值：" in message
+    assert "单日本次触发价：90.00" in message
+    assert "单日下一阶梯价：88.65" in message
+    assert "单月本次触发价：未触发" in message
     assert "自动交易" not in message
     assert "不自动交易" not in message
 
@@ -94,6 +100,32 @@ def test_daily_summary_message_keeps_intraday_and_close_confirmation_separate():
     assert "收盘确认：" in message
     assert "单日下跌提醒：无" in message
     assert "单月下跌提醒：1 次" in message
+
+
+def test_weekly_summary_message_contains_weekly_counts_and_next_lines():
+    week_state = {
+        "weekly_base_count": 1,
+        "daily_drop_count": 2,
+        "monthly_drop_count": 1,
+        "ma20_deviation_sent": False,
+        "ma50_deviation_sent": True,
+    }
+    message = build_weekly_summary_message(
+        snapshot(),
+        STRATEGY_PARAMS["SPY"],
+        "2026-W23",
+        week_state,
+        next_week_daily_trigger_price=88.65,
+        next_monthly_trigger_price=85.50,
+    )
+    assert "【SPY 每周定投总结】" in message
+    assert "周次：2026-W23" in message
+    assert "本周收盘价：90.00" in message
+    assert "每周基础提醒：1 次" in message
+    assert "单日下跌提醒：2 次" in message
+    assert "50MA偏离提醒：是" in message
+    assert "下周单日初始触发价：88.65" in message
+    assert "本月月跌下一阶梯价：85.50" in message
 
 
 def test_monthly_summary_message_contains_next_month_base():

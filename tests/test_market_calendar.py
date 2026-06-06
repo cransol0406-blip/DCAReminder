@@ -22,7 +22,14 @@ def test_non_first_trading_day_has_no_weekly_open_window():
     assert window.is_trading_day
     assert window.is_regular_window
     assert not window.is_week_first_trading_day
+    assert not window.is_week_last_trading_day
     assert not window.is_weekly_open_reminder_window
+
+
+def test_last_trading_day_of_week_is_detected():
+    window = get_market_window(datetime(2026, 5, 29, 16, 15, tzinfo=ET))
+    assert window.is_trading_day
+    assert window.is_week_last_trading_day
 
 
 def test_close_summary_window_starts_at_1615_et():

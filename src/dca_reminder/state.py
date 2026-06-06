@@ -91,8 +91,27 @@ def get_month_state(symbol_state: dict, month_key: str, monthly_base_close: floa
 
 def get_week_state(symbol_state: dict, week_key: str) -> dict:
     weeks = symbol_state.setdefault("weeks", {})
-    week_state = weeks.setdefault(week_key, {"weekly_base_sent": False})
+    week_state = weeks.setdefault(
+        week_key,
+        {
+            "weekly_base_sent": False,
+            "weekly_summary_sent": False,
+            "weekly_base_count": 0,
+            "daily_drop_count": 0,
+            "monthly_drop_count": 0,
+            "ma20_deviation_sent": False,
+            "ma50_deviation_sent": False,
+            "trigger_records": [],
+        },
+    )
     week_state.setdefault("weekly_base_sent", False)
+    week_state.setdefault("weekly_summary_sent", False)
+    week_state.setdefault("weekly_base_count", 0)
+    week_state.setdefault("daily_drop_count", 0)
+    week_state.setdefault("monthly_drop_count", 0)
+    week_state.setdefault("ma20_deviation_sent", False)
+    week_state.setdefault("ma50_deviation_sent", False)
+    week_state.setdefault("trigger_records", [])
     return week_state
 
 
@@ -106,16 +125,21 @@ def apply_sent_signals(
     for signal in signals:
         if signal.signal_type == SignalType.WEEKLY_BASE:
             week_state["weekly_base_sent"] = True
+            week_state["weekly_base_count"] = int(week_state.get("weekly_base_count", 0)) + 1
             month_state["weekly_base_count"] = int(month_state.get("weekly_base_count", 0)) + 1
         elif signal.signal_type == SignalType.DAILY_DROP:
             day_state.setdefault("daily_trigger_prices", []).append(float(signal.trigger_price))
+            week_state["daily_drop_count"] = int(week_state.get("daily_drop_count", 0)) + 1
             month_state["daily_drop_count"] = int(month_state.get("daily_drop_count", 0)) + 1
         elif signal.signal_type == SignalType.MONTHLY_DROP:
             month_state.setdefault("monthly_trigger_prices", []).append(float(signal.trigger_price))
+            week_state["monthly_drop_count"] = int(week_state.get("monthly_drop_count", 0)) + 1
             month_state["monthly_drop_count"] = int(month_state.get("monthly_drop_count", 0)) + 1
         elif signal.signal_type == SignalType.MA20_DEVIATION:
+            week_state["ma20_deviation_sent"] = True
             month_state["ma20_deviation_sent"] = True
         elif signal.signal_type == SignalType.MA50_DEVIATION:
+            week_state["ma50_deviation_sent"] = True
             month_state["ma50_deviation_sent"] = True
 
         record = {
@@ -125,6 +149,7 @@ def apply_sent_signals(
             "trigger_price": signal.trigger_price,
         }
         day_state.setdefault("intraday_signals", []).append(record)
+        week_state.setdefault("trigger_records", []).append(record)
         month_state.setdefault("trigger_records", []).append(record)
 
 

@@ -27,6 +27,7 @@ from dca_reminder.telegram import (
     build_daily_summary_message,
     build_intraday_message,
     build_monthly_summary_message,
+    build_weekly_summary_message,
     send_message,
 )
 
@@ -85,38 +86,56 @@ def main() -> int:
             else:
                 LOGGER.info("%s has no new intraday signals.", symbol)
 
-        if window.is_close_summary_window and not day_state.get("daily_summary_sent"):
+        if window.is_close_summary_window:
             close_snapshot = market_data.close_snapshot()
             if close_snapshot is None:
                 LOGGER.info("%s close price is not ready; summary will retry later.", symbol)
             else:
-                confirmed_daily = count_confirmed_drop_levels(
-                    close_snapshot.price,
-                    close_snapshot.previous_close,
-                    params.daily_drop_pct,
-                )
-                confirmed_monthly = count_confirmed_drop_levels(
-                    close_snapshot.price,
-                    close_snapshot.previous_month_close,
-                    params.monthly_drop_pct,
-                )
-                confirmed_ma20 = close_snapshot.price <= close_snapshot.ma20 * params.ma20_factor
-                confirmed_ma50 = close_snapshot.price <= close_snapshot.ma50 * params.ma50_factor
-                daily_message = build_daily_summary_message(
-                    snapshot=close_snapshot,
-                    params=params,
-                    day_state=day_state,
-                    confirmed_daily_count=confirmed_daily,
-                    confirmed_monthly_count=confirmed_monthly,
-                    confirmed_ma20=confirmed_ma20,
-                    confirmed_ma50=confirmed_ma50,
-                    tomorrow_daily_trigger_price=next_daily_trigger_price(close_snapshot.price, params),
-                    next_monthly_trigger_price=next_monthly_trigger_price(month_state, params),
-                )
-                _deliver_message(config, daily_message)
-                day_state["daily_summary_sent"] = True
-                LOGGER.info("%s sent daily summary.", symbol)
-                state_changed = True
+                next_daily_price = next_daily_trigger_price(close_snapshot.price, params)
+                next_monthly_price = next_monthly_trigger_price(month_state, params)
+
+                if not day_state.get("daily_summary_sent"):
+                    confirmed_daily = count_confirmed_drop_levels(
+                        close_snapshot.price,
+                        close_snapshot.previous_close,
+                        params.daily_drop_pct,
+                    )
+                    confirmed_monthly = count_confirmed_drop_levels(
+                        close_snapshot.price,
+                        close_snapshot.previous_month_close,
+                        params.monthly_drop_pct,
+                    )
+                    confirmed_ma20 = close_snapshot.price <= close_snapshot.ma20 * params.ma20_factor
+                    confirmed_ma50 = close_snapshot.price <= close_snapshot.ma50 * params.ma50_factor
+                    daily_message = build_daily_summary_message(
+                        snapshot=close_snapshot,
+                        params=params,
+                        day_state=day_state,
+                        confirmed_daily_count=confirmed_daily,
+                        confirmed_monthly_count=confirmed_monthly,
+                        confirmed_ma20=confirmed_ma20,
+                        confirmed_ma50=confirmed_ma50,
+                        tomorrow_daily_trigger_price=next_daily_price,
+                        next_monthly_trigger_price=next_monthly_price,
+                    )
+                    _deliver_message(config, daily_message)
+                    day_state["daily_summary_sent"] = True
+                    LOGGER.info("%s sent daily summary.", symbol)
+                    state_changed = True
+
+                if window.is_week_last_trading_day and not week_state.get("weekly_summary_sent"):
+                    weekly_message = build_weekly_summary_message(
+                        snapshot=close_snapshot,
+                        params=params,
+                        week_key=window.week_key,
+                        week_state=week_state,
+                        next_week_daily_trigger_price=next_daily_price,
+                        next_monthly_trigger_price=next_monthly_price,
+                    )
+                    _deliver_message(config, weekly_message)
+                    week_state["weekly_summary_sent"] = True
+                    LOGGER.info("%s sent weekly summary.", symbol)
+                    state_changed = True
 
                 if window.is_month_last_trading_day and not month_state.get("monthly_summary_sent"):
                     monthly_message = build_monthly_summary_message(close_snapshot, params, month_state)

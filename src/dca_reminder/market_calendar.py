@@ -17,6 +17,7 @@ class MarketWindow:
     is_trading_day: bool
     is_regular_window: bool
     is_week_first_trading_day: bool
+    is_week_last_trading_day: bool
     is_month_last_trading_day: bool
     is_weekly_open_reminder_window: bool
     is_close_summary_window: bool
@@ -35,7 +36,7 @@ def get_market_window(now: datetime | None = None) -> MarketWindow:
 
     today_schedule = nyse.schedule(start_date=day_key, end_date=day_key)
     if today_schedule.empty:
-        return MarketWindow(False, False, False, False, False, False, day_key, week_key, month_key)
+        return MarketWindow(False, False, False, False, False, False, False, day_key, week_key, month_key)
 
     row = today_schedule.iloc[0]
     market_open = _to_et(row["market_open"])
@@ -46,7 +47,9 @@ def get_market_window(now: datetime | None = None) -> MarketWindow:
     week_end = week_start + pd.Timedelta(days=6)
     week_schedule = nyse.schedule(start_date=week_start.isoformat(), end_date=week_end.isoformat())
     first_week_day = week_schedule.index[0].date()
+    last_week_day = week_schedule.index[-1].date()
     is_week_first = today == first_week_day
+    is_week_last = today == last_week_day
 
     month_start = today.replace(day=1)
     next_month = (pd.Timestamp(month_start) + pd.offsets.MonthBegin(1)).date()
@@ -59,6 +62,7 @@ def get_market_window(now: datetime | None = None) -> MarketWindow:
         is_trading_day=True,
         is_regular_window=is_regular,
         is_week_first_trading_day=is_week_first,
+        is_week_last_trading_day=is_week_last,
         is_month_last_trading_day=is_month_last,
         is_weekly_open_reminder_window=is_week_first and is_regular,
         is_close_summary_window=now_et.time() >= time(16, 15),
