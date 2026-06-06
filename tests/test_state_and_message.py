@@ -57,7 +57,7 @@ def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():
     ]
     message = build_intraday_message(snapshot(), STRATEGY_PARAMS["SPY"], signals)
     assert "【SPY 定投提醒｜盘中触发】" in message
-    assert "美股时间：2026-06-02 10:00" in message
+    assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
     assert "当日涨跌幅：-10.00%（基准：100.00）" in message
     assert "当月涨跌幅：-10.00%（基准：100.00）" in message
@@ -87,7 +87,7 @@ def test_daily_summary_message_keeps_intraday_and_close_confirmation_separate():
         next_monthly_trigger_price=85.50,
     )
     assert "盘中触发：" in message
-    assert "美股时间：2026-06-02 10:00" in message
+    assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
     assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
     assert "单日下跌提醒：1 次" in message
@@ -106,7 +106,7 @@ def test_monthly_summary_message_contains_next_month_base():
     }
     message = build_monthly_summary_message(snapshot(), STRATEGY_PARAMS["SPY"], month_state)
     assert "【SPY 月度定投总结】" in message
-    assert "美股时间：2026-06-02 10:00" in message
+    assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
     assert "本月涨跌幅：-10.00%（基准：100.00）" in message
     assert "近30日涨跌幅：+12.50%（基准：80.00）" in message

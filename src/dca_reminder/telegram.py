@@ -165,6 +165,6 @@ def _time_lines(snapshot: MarketSnapshot) -> list[str]:
     market_time = snapshot.timestamp.strftime("%Y-%m-%d %H:%M")
     beijing_time = snapshot.timestamp.astimezone(CN).strftime("%Y-%m-%d %H:%M")
     return [
-        f"美股时间：{market_time}",
+        f"美东时间：{market_time}",
         f"北京时间：{beijing_time}",
     ]
