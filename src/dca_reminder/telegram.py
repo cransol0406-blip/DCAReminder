@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+from zoneinfo import ZoneInfo
+
 import requests
 
 from dca_reminder.rules import (
     MarketSnapshot,
-    SIGNAL_LABELS,
     SignalResult,
     SignalType,
     StrategyParams,
 )
 from dca_reminder.state import count_day_signals
+
+
+CN = ZoneInfo("Asia/Shanghai")
 
 
 def build_intraday_message(
@@ -22,11 +26,12 @@ def build_intraday_message(
         [
             f"【{snapshot.symbol} 定投提醒｜盘中触发】",
             "",
-            f"时间：{snapshot.timestamp.strftime('%Y-%m-%d %H:%M')}",
+            *_time_lines(snapshot),
             "",
             f"当前价格：{snapshot.price:.2f}",
-            f"当日涨跌幅：{snapshot.daily_change:.2%}",
-            f"当月涨跌幅：{snapshot.monthly_change:.2%}",
+            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "触发条件：",
             f"- 单日下跌提醒：{_count_text(signal_by_type.get(SignalType.DAILY_DROP))}",
@@ -59,11 +64,12 @@ def build_daily_summary_message(
         [
             f"【{snapshot.symbol} 每日定投总结】",
             "",
-            f"日期：{snapshot.timestamp.strftime('%Y-%m-%d')}",
+            *_time_lines(snapshot),
             "",
             f"收盘价：{snapshot.price:.2f}",
-            f"当日涨跌幅：{snapshot.daily_change:.2%}",
-            f"当月涨跌幅：{snapshot.monthly_change:.2%}",
+            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "盘中触发：",
             f"- 单日下跌提醒：{count_day_signals(day_state, SignalType.DAILY_DROP)} 次",
@@ -101,9 +107,11 @@ def build_monthly_summary_message(
             f"【{snapshot.symbol} 月度定投总结】",
             "",
             f"月份：{snapshot.timestamp.strftime('%Y-%m')}",
+            *_time_lines(snapshot),
             "",
             f"月末收盘价：{snapshot.price:.2f}",
-            f"本月涨跌幅：{snapshot.monthly_change:.2%}",
+            _change_line("本月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "本月提醒统计：",
             f"- 每周基础提醒：{int(month_state.get('weekly_base_count', 0))} 次",
@@ -147,3 +155,16 @@ def _count_or_none(count: int) -> str:
 
 def _yes_no(value: bool) -> str:
     return "是" if value else "否"
+
+
+def _change_line(label: str, change: float, base_price: float) -> str:
+    return f"{label}：{change:+.2%}（基准：{base_price:.2f}）"
+
+
+def _time_lines(snapshot: MarketSnapshot) -> list[str]:
+    market_time = snapshot.timestamp.strftime("%Y-%m-%d %H:%M")
+    beijing_time = snapshot.timestamp.astimezone(CN).strftime("%Y-%m-%d %H:%M")
+    return [
+        f"美股时间：{market_time}",
+        f"北京时间：{beijing_time}",
+    ]

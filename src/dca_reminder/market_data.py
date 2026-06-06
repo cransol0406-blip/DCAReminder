@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -20,6 +20,7 @@ class MarketData:
     current_price: float
     previous_close: float
     previous_month_close: float
+    trailing_30d_base_close: float
     intraday_ma20: float
     intraday_ma50: float
     close_price: float | None
@@ -33,6 +34,7 @@ class MarketData:
             price=self.current_price,
             previous_close=self.previous_close,
             previous_month_close=self.previous_month_close,
+            trailing_30d_base_close=self.trailing_30d_base_close,
             ma20=self.intraday_ma20,
             ma50=self.intraday_ma50,
         )
@@ -46,6 +48,7 @@ class MarketData:
             price=self.close_price,
             previous_close=self.previous_close,
             previous_month_close=self.previous_month_close,
+            trailing_30d_base_close=self.trailing_30d_base_close,
             ma20=self.close_ma20,
             ma50=self.close_ma50,
         )
@@ -74,6 +77,7 @@ def fetch_market_data(symbol: str, now: datetime | None = None, include_current_
 
     previous_close = float(completed_daily["Close"].iloc[-1])
     previous_month_close = _previous_month_close(symbol, daily, timestamp)
+    trailing_30d_base_close = _trailing_30d_base_close(symbol, daily, timestamp)
     intraday_ma20 = float(completed_daily["Close"].tail(20).mean())
     intraday_ma50 = float(completed_daily["Close"].tail(50).mean())
     today_daily = daily[daily.index.date == timestamp.date()]
@@ -95,6 +99,7 @@ def fetch_market_data(symbol: str, now: datetime | None = None, include_current_
         current_price=current_price,
         previous_close=previous_close,
         previous_month_close=previous_month_close,
+        trailing_30d_base_close=trailing_30d_base_close,
         intraday_ma20=intraday_ma20,
         intraday_ma50=intraday_ma50,
         close_price=close_price,
@@ -118,6 +123,14 @@ def _previous_month_close(symbol: str, daily: pd.DataFrame, timestamp: datetime)
     if previous_month_daily.empty:
         raise RuntimeError(f"No previous-month close available for {symbol}")
     return float(previous_month_daily["Close"].iloc[-1])
+
+
+def _trailing_30d_base_close(symbol: str, daily: pd.DataFrame, timestamp: datetime) -> float:
+    target_date = timestamp.date() - timedelta(days=30)
+    trailing_daily = daily[daily.index.date <= target_date]
+    if trailing_daily.empty:
+        raise RuntimeError(f"No trailing 30-day base close available for {symbol}")
+    return float(trailing_daily["Close"].iloc[-1])
 
 
 def _current_price(ticker: yf.Ticker, symbol: str) -> float:

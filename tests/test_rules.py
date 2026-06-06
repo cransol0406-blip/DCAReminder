@@ -22,6 +22,7 @@ def snapshot(symbol: str = "SPY", price: float = 100.0) -> MarketSnapshot:
         price=price,
         previous_close=100.0,
         previous_month_close=100.0,
+        trailing_30d_base_close=80.0,
         ma20=100.0,
         ma50=100.0,
     )
@@ -169,3 +170,7 @@ def test_multi_signal_order_uses_priority():
 def test_confirmed_drop_level_count_uses_ideal_ladder():
     assert count_confirmed_drop_levels(95.57, 100.0, 0.015) == 3
     assert count_confirmed_drop_levels(94.12, 100.0, 0.02) == 3
+
+
+def test_trailing_30d_change_uses_trailing_base_close():
+    assert snapshot("SPY", 100.0).trailing_30d_change == 0.25

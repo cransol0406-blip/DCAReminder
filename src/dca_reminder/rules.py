@@ -69,6 +69,7 @@ class MarketSnapshot:
     price: float
     previous_close: float
     previous_month_close: float
+    trailing_30d_base_close: float
     ma20: float
     ma50: float
 
@@ -79,6 +80,10 @@ class MarketSnapshot:
     @property
     def monthly_change(self) -> float:
         return self.price / self.previous_month_close - 1.0
+
+    @property
+    def trailing_30d_change(self) -> float:
+        return self.price / self.trailing_30d_base_close - 1.0
 
 
 @dataclass(frozen=True)
