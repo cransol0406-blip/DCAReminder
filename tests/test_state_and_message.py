@@ -55,7 +55,7 @@ def test_state_records_are_independent_by_symbol_day_month_week():
 def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():
     signals = [
         SignalResult(SignalType.MA50_DEVIATION, None, 90.0, None, "ma50"),
-        SignalResult(SignalType.DAILY_DROP, 1, 90.0, 88.65, "daily"),
+        SignalResult(SignalType.DAILY_DROP, 2, 90.0, 88.65, "daily"),
     ]
     message = build_intraday_message(snapshot(), STRATEGY_PARAMS["SPY"], signals)
     assert "【SPY 定投提醒｜盘中触发】" in message
@@ -65,7 +65,7 @@ def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():
     assert "当月涨跌幅：-10.00%（基准：100.00）" in message
     assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
     assert "50MA偏离提醒：是" in message
-    assert "单日下跌提醒：第 1 次" in message
+    assert "单日下跌提醒：第 2 次（-1.5%，-1.5%）" in message
     assert "阶梯阈值：" in message
     assert "单日本次触发价：90.00" in message
     assert "单日下一阶梯价：88.65" in message

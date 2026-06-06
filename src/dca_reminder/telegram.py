@@ -34,8 +34,8 @@ def build_intraday_message(
             _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "触发条件：",
-            f"- 单日下跌提醒：{_count_text(signal_by_type.get(SignalType.DAILY_DROP))}",
-            f"- 单月下跌提醒：{_count_text(signal_by_type.get(SignalType.MONTHLY_DROP))}",
+            f"- 单日下跌提醒：{_count_text(signal_by_type.get(SignalType.DAILY_DROP), params.daily_drop_pct)}",
+            f"- 单月下跌提醒：{_count_text(signal_by_type.get(SignalType.MONTHLY_DROP), params.monthly_drop_pct)}",
             f"- 20MA偏离提醒：{_yes_no(SignalType.MA20_DEVIATION in signal_by_type)}",
             f"- 50MA偏离提醒：{_yes_no(SignalType.MA50_DEVIATION in signal_by_type)}",
             f"- 每周基础定投提醒：{_yes_no(SignalType.WEEKLY_BASE in signal_by_type)}",
@@ -188,10 +188,13 @@ def send_message(bot_token: str, chat_id: str, text: str) -> None:
         raise RuntimeError(f"Telegram sendMessage failed: {payload}")
 
 
-def _count_text(signal: SignalResult | None) -> str:
+def _count_text(signal: SignalResult | None, drop_pct: float) -> str:
     if signal is None:
         return "未触发"
-    return f"第 {signal.count} 次"
+    if signal.count is None:
+        return "已触发"
+    thresholds = "，".join([f"-{drop_pct:.1%}"] * signal.count)
+    return f"第 {signal.count} 次（{thresholds}）"
 
 
 def _count_or_none(count: int) -> str:
