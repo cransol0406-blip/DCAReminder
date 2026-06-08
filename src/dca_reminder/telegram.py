@@ -29,9 +29,9 @@ def build_intraday_message(
             *_time_lines(snapshot),
             "",
             f"当前价格：{snapshot.price:.2f}",
-            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
-            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
-            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
+            _change_line("当日", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("30日", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "触发条件：",
             f"- 单日下跌提醒：{_count_text(signal_by_type.get(SignalType.DAILY_DROP), params.daily_drop_pct)}",
@@ -73,9 +73,9 @@ def build_daily_summary_message(
             *_time_lines(snapshot),
             "",
             f"收盘价：{snapshot.price:.2f}",
-            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
-            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
-            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
+            _change_line("当日", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("30日", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "盘中触发：",
             f"- 单日下跌提醒：{count_day_signals(day_state, SignalType.DAILY_DROP)} 次",
@@ -118,9 +118,9 @@ def build_weekly_summary_message(
             *_time_lines(snapshot),
             "",
             f"本周收盘价：{snapshot.price:.2f}",
-            _change_line("当日涨跌幅", snapshot.daily_change, snapshot.previous_close),
-            _change_line("当月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
-            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
+            _change_line("当日", snapshot.daily_change, snapshot.previous_close),
+            _change_line("当月", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("30日", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "本周提醒统计：",
             f"- 每周基础提醒：{int(week_state.get('weekly_base_count', 0))} 次",
@@ -155,8 +155,8 @@ def build_monthly_summary_message(
             *_time_lines(snapshot),
             "",
             f"月末收盘价：{snapshot.price:.2f}",
-            _change_line("本月涨跌幅", snapshot.monthly_change, snapshot.previous_month_close),
-            _change_line("近30日涨跌幅", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
+            _change_line("当月", snapshot.monthly_change, snapshot.previous_month_close),
+            _change_line("30日", snapshot.trailing_30d_change, snapshot.trailing_30d_base_close),
             "",
             "本月提醒统计：",
             f"- 每周基础提醒：{int(month_state.get('weekly_base_count', 0))} 次",
@@ -215,7 +215,7 @@ def _price_text(signal: SignalResult | None, attr_name: str) -> str:
 
 
 def _change_line(label: str, change: float, base_price: float) -> str:
-    return f"{label}：{change:+.2%}（基准：{base_price:.2f}）"
+    return f"{label}：{change:+.2%}（基准{base_price:.2f}）"
 
 
 def _time_lines(snapshot: MarketSnapshot) -> list[str]:

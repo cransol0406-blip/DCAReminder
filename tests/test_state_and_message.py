@@ -61,9 +61,11 @@ def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():
     assert "【SPY 定投提醒｜盘中触发】" in message
     assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
-    assert "当日涨跌幅：-10.00%（基准：100.00）" in message
-    assert "当月涨跌幅：-10.00%（基准：100.00）" in message
-    assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
+    assert "当日：-10.00%（基准100.00）" in message
+    assert "当月：-10.00%（基准100.00）" in message
+    assert "30日：+12.50%（基准80.00）" in message
+    assert "当日涨跌幅" not in message
+    assert "近30日涨跌幅" not in message
     assert "50MA偏离提醒：是" in message
     assert "单日下跌提醒：第 2 次（-1.5%，-1.5%）" in message
     assert "阶梯阈值：" in message
@@ -95,7 +97,8 @@ def test_daily_summary_message_keeps_intraday_and_close_confirmation_separate():
     assert "盘中触发：" in message
     assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
-    assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
+    assert "30日：+12.50%（基准80.00）" in message
+    assert "近30日涨跌幅" not in message
     assert "单日下跌提醒：1 次" in message
     assert "收盘确认：" in message
     assert "单日下跌提醒：无" in message
@@ -121,6 +124,9 @@ def test_weekly_summary_message_contains_weekly_counts_and_next_lines():
     assert "【SPY 每周定投总结】" in message
     assert "周次：2026-W23" in message
     assert "本周收盘价：90.00" in message
+    assert "当日：-10.00%（基准100.00）" in message
+    assert "当月：-10.00%（基准100.00）" in message
+    assert "30日：+12.50%（基准80.00）" in message
     assert "每周基础提醒：1 次" in message
     assert "单日下跌提醒：2 次" in message
     assert "50MA偏离提醒：是" in message
@@ -140,8 +146,10 @@ def test_monthly_summary_message_contains_next_month_base():
     assert "【SPY 月度定投总结】" in message
     assert "美东时间：2026-06-02 10:00" in message
     assert "北京时间：2026-06-02 22:00" in message
-    assert "本月涨跌幅：-10.00%（基准：100.00）" in message
-    assert "近30日涨跌幅：+12.50%（基准：80.00）" in message
+    assert "当月：-10.00%（基准100.00）" in message
+    assert "30日：+12.50%（基准80.00）" in message
+    assert "本月涨跌幅" not in message
+    assert "近30日涨跌幅" not in message
     assert "每周基础提醒：4 次" in message
     assert "下月月跌初始基准：90.00" in message
     assert "下月第一次月跌触发价：85.50" in message
