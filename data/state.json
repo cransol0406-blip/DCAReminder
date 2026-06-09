@@ -51,7 +51,7 @@
           ]
         },
         "2026-06-09": {
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             701.7486071777344,
             687.7136350341797
@@ -207,7 +207,7 @@
           ]
         },
         "2026-06-09": {
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             728.1316711425782
           ],
