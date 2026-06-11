@@ -75,6 +75,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-06-11": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -226,6 +232,12 @@
           ]
         },
         "2026-06-10": {
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
+        },
+        "2026-06-11": {
+          "close_confirmed_signals": [],
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
