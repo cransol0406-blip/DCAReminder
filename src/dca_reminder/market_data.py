@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import math
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -40,7 +41,7 @@ class MarketData:
         )
 
     def close_snapshot(self) -> MarketSnapshot | None:
-        if self.close_price is None or self.close_ma20 is None or self.close_ma50 is None:
+        if not all(_is_valid_price(value) for value in (self.close_price, self.close_ma20, self.close_ma50)):
             return None
         return MarketSnapshot(
             symbol=self.symbol,
@@ -85,11 +86,16 @@ def fetch_market_data(symbol: str, now: datetime | None = None, include_current_
     close_ma20 = None
     close_ma50 = None
     if not today_daily.empty:
-        close_price = float(today_daily["Close"].iloc[-1])
+        maybe_close_price = _to_valid_price(today_daily["Close"].iloc[-1])
         close_daily = daily[daily.index.date <= timestamp.date()]
-        if len(close_daily) >= 50:
+        if maybe_close_price is not None and len(close_daily) >= 50:
+            close_price = maybe_close_price
             close_ma20 = float(close_daily["Close"].tail(20).mean())
             close_ma50 = float(close_daily["Close"].tail(50).mean())
+            if not _is_valid_price(close_ma20) or not _is_valid_price(close_ma50):
+                close_price = None
+                close_ma20 = None
+                close_ma50 = None
 
     current_price = _current_price(ticker, symbol) if include_current_price else (close_price or previous_close)
 
@@ -149,3 +155,20 @@ def _current_price(ticker: yf.Ticker, symbol: str) -> float:
         if value is not None:
             return float(value)
     raise RuntimeError(f"No current price returned for {symbol}")
+
+
+def _to_valid_price(value) -> float | None:
+    try:
+        price = float(value)
+    except (TypeError, ValueError):
+        return None
+    return price if _is_valid_price(price) else None
+
+
+def _is_valid_price(value) -> bool:
+    if value is None:
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False

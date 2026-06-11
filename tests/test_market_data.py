@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+import math
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from dca_reminder.market_data import _previous_month_close, _trailing_30d_base_close
+from dca_reminder.market_data import MarketData, _previous_month_close, _trailing_30d_base_close
 
 
 ET = ZoneInfo("America/New_York")
@@ -53,3 +54,21 @@ def test_trailing_30d_base_close_searches_backward_from_non_trading_day():
     daily = pd.DataFrame({"Close": [97.0, 100.0, 120.0], "Adj Close": [91.0, 95.0, 119.0]}, index=index)
     close = _trailing_30d_base_close("SPY", daily, datetime(2026, 6, 2, tzinfo=ET))
     assert close == 97.0
+
+
+def test_close_snapshot_rejects_nan_close_price():
+    market_data = MarketData(
+        symbol="SPY",
+        timestamp=datetime(2026, 6, 2, 16, 15, tzinfo=ET),
+        current_price=100.0,
+        previous_close=101.0,
+        previous_month_close=99.0,
+        trailing_30d_base_close=98.0,
+        intraday_ma20=100.0,
+        intraday_ma50=100.0,
+        close_price=math.nan,
+        close_ma20=100.0,
+        close_ma50=100.0,
+    )
+
+    assert market_data.close_snapshot() is None
