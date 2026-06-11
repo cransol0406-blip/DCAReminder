@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 from dca_reminder.rules import STRATEGY_PARAMS, MarketSnapshot, SignalResult, SignalType
 from dca_reminder.state import (
+    apply_close_confirmations,
     apply_sent_signals,
     get_day_state,
     get_month_state,
@@ -50,6 +51,57 @@ def test_state_records_are_independent_by_symbol_day_month_week():
     assert spy_month["daily_drop_count"] == 1
     assert spy_week["daily_drop_count"] == 1
     assert qqq_month["daily_drop_count"] == 0
+
+
+def test_close_confirmations_update_aggregate_state_without_intraday_records():
+    day_state = {
+        "daily_trigger_prices": [],
+        "intraday_signals": [],
+        "close_confirmed_signals": [],
+    }
+    month_state = {
+        "monthly_base_close": 100.0,
+        "monthly_trigger_prices": [],
+        "daily_drop_count": 0,
+        "monthly_drop_count": 0,
+        "ma20_deviation_sent": False,
+        "ma50_deviation_sent": False,
+        "trigger_records": [],
+    }
+    week_state = {
+        "daily_drop_count": 0,
+        "monthly_drop_count": 0,
+        "ma20_deviation_sent": False,
+        "ma50_deviation_sent": False,
+        "trigger_records": [],
+    }
+
+    changed = apply_close_confirmations(
+        day_state=day_state,
+        month_state=month_state,
+        week_state=week_state,
+        confirmed_daily_count=1,
+        confirmed_monthly_count=1,
+        confirmed_ma20=True,
+        confirmed_ma50=False,
+        previous_close=100.0,
+        previous_month_close=100.0,
+        daily_drop_pct=0.015,
+        monthly_drop_pct=0.05,
+        confirmed_at="2026-06-02T16:15:00-04:00",
+    )
+
+    assert changed is True
+    assert day_state["intraday_signals"] == []
+    assert day_state["daily_trigger_prices"] == [98.5]
+    assert month_state["monthly_trigger_prices"] == [95.0]
+    assert week_state["daily_drop_count"] == 1
+    assert month_state["daily_drop_count"] == 1
+    assert week_state["monthly_drop_count"] == 1
+    assert month_state["monthly_drop_count"] == 1
+    assert week_state["ma20_deviation_sent"] is True
+    assert month_state["ma20_deviation_sent"] is True
+    assert day_state["close_confirmed_signals"][0]["source"] == "close_summary"
 
 
 def test_intraday_message_lists_multiple_signals_without_trade_disclaimer():

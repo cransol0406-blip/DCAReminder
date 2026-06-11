@@ -15,6 +15,7 @@ from dca_reminder.rules import (
     next_monthly_trigger_price,
 )
 from dca_reminder.state import (
+    apply_close_confirmations,
     apply_sent_signals,
     get_day_state,
     get_month_state,
@@ -69,6 +70,7 @@ def main() -> int:
 
         if window.is_regular_window:
             snapshot = market_data.intraday_snapshot()
+            _log_daily_diagnostics(symbol, "regular", snapshot.price, snapshot.previous_close, params, day_state)
             signals = evaluate_intraday_signals(
                 snapshot=snapshot,
                 params=params,
@@ -91,8 +93,7 @@ def main() -> int:
             if close_snapshot is None:
                 LOGGER.info("%s close price is not ready; summary will retry later.", symbol)
             else:
-                next_daily_price = next_daily_trigger_price(close_snapshot.price, params)
-                next_monthly_price = next_monthly_trigger_price(month_state, params)
+                _log_daily_diagnostics(symbol, "close", close_snapshot.price, close_snapshot.previous_close, params, day_state)
 
                 if not day_state.get("daily_summary_sent"):
                     confirmed_daily = count_confirmed_drop_levels(
@@ -107,6 +108,24 @@ def main() -> int:
                     )
                     confirmed_ma20 = close_snapshot.price <= close_snapshot.ma20 * params.ma20_factor
                     confirmed_ma50 = close_snapshot.price <= close_snapshot.ma50 * params.ma50_factor
+                    if apply_close_confirmations(
+                        day_state=day_state,
+                        month_state=month_state,
+                        week_state=week_state,
+                        confirmed_daily_count=confirmed_daily,
+                        confirmed_monthly_count=confirmed_monthly,
+                        confirmed_ma20=confirmed_ma20,
+                        confirmed_ma50=confirmed_ma50,
+                        previous_close=close_snapshot.previous_close,
+                        previous_month_close=close_snapshot.previous_month_close,
+                        daily_drop_pct=params.daily_drop_pct,
+                        monthly_drop_pct=params.monthly_drop_pct,
+                        confirmed_at=close_snapshot.timestamp.isoformat(),
+                    ):
+                        LOGGER.info("%s applied close-confirmed signal state.", symbol)
+                        state_changed = True
+                    next_daily_price = next_daily_trigger_price(close_snapshot.price, params)
+                    next_monthly_price = next_monthly_trigger_price(month_state, params)
                     daily_message = build_daily_summary_message(
                         snapshot=close_snapshot,
                         params=params,
@@ -124,6 +143,8 @@ def main() -> int:
                     state_changed = True
 
                 if window.is_week_last_trading_day and not week_state.get("weekly_summary_sent"):
+                    next_daily_price = next_daily_trigger_price(close_snapshot.price, params)
+                    next_monthly_price = next_monthly_trigger_price(month_state, params)
                     weekly_message = build_weekly_summary_message(
                         snapshot=close_snapshot,
                         params=params,
@@ -157,6 +178,27 @@ def _deliver_message(config, message: str) -> None:
     if not config.telegram_bot_token or not config.telegram_chat_id:
         raise RuntimeError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required")
     send_message(config.telegram_bot_token, config.telegram_chat_id, message)
+
+
+def _log_daily_diagnostics(symbol, context: str, price: float, previous_close: float, params, day_state: dict) -> None:
+    daily_prices = [float(value) for value in day_state.get("daily_trigger_prices", [])]
+    daily_base = daily_prices[-1] if daily_prices else previous_close
+    daily_trigger_line = daily_base * params.daily_factor
+    daily_change = price / previous_close - 1.0
+    is_triggered = price <= round(daily_trigger_line, 2) + 1e-9
+    LOGGER.info(
+        (
+            "%s diagnostics (%s): current_price=%.4f previous_close=%.4f "
+            "daily_trigger_line=%.4f daily_change=%+.4f%% daily_triggered=%s"
+        ),
+        symbol,
+        context,
+        price,
+        previous_close,
+        daily_trigger_line,
+        daily_change * 100.0,
+        is_triggered,
+    )
 
 
 if __name__ == "__main__":

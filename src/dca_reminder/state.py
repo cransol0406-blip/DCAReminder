@@ -57,6 +57,7 @@ def get_day_state(symbol_state: dict, day_key: str) -> dict:
     )
     day_state.setdefault("daily_trigger_prices", [])
     day_state.setdefault("intraday_signals", [])
+    day_state.setdefault("close_confirmed_signals", [])
     day_state.setdefault("daily_summary_sent", False)
     return day_state
 
@@ -151,6 +152,112 @@ def apply_sent_signals(
         day_state.setdefault("intraday_signals", []).append(record)
         week_state.setdefault("trigger_records", []).append(record)
         month_state.setdefault("trigger_records", []).append(record)
+
+
+def apply_close_confirmations(
+    day_state: dict,
+    month_state: dict,
+    week_state: dict,
+    confirmed_daily_count: int,
+    confirmed_monthly_count: int,
+    confirmed_ma20: bool,
+    confirmed_ma50: bool,
+    previous_close: float,
+    previous_month_close: float,
+    daily_drop_pct: float,
+    monthly_drop_pct: float,
+    confirmed_at: str,
+) -> bool:
+    changed = False
+
+    added_daily = _add_confirmed_drop_levels(
+        day_state=day_state,
+        aggregate_states=[week_state, month_state],
+        prices_key="daily_trigger_prices",
+        count_key="daily_drop_count",
+        signal_type=SignalType.DAILY_DROP,
+        confirmed_count=confirmed_daily_count,
+        initial_base=previous_close,
+        drop_pct=daily_drop_pct,
+        confirmed_at=confirmed_at,
+    )
+    changed = changed or added_daily
+
+    added_monthly = _add_confirmed_drop_levels(
+        day_state=day_state,
+        aggregate_states=[week_state, month_state],
+        prices_key="monthly_trigger_prices",
+        count_key="monthly_drop_count",
+        signal_type=SignalType.MONTHLY_DROP,
+        confirmed_count=confirmed_monthly_count,
+        initial_base=previous_month_close,
+        drop_pct=monthly_drop_pct,
+        confirmed_at=confirmed_at,
+        price_owner=month_state,
+    )
+    changed = changed or added_monthly
+
+    if confirmed_ma20 and not month_state.get("ma20_deviation_sent"):
+        week_state["ma20_deviation_sent"] = True
+        month_state["ma20_deviation_sent"] = True
+        _append_close_record(day_state, week_state, month_state, SignalType.MA20_DEVIATION, None, None, confirmed_at)
+        changed = True
+
+    if confirmed_ma50 and not month_state.get("ma50_deviation_sent"):
+        week_state["ma50_deviation_sent"] = True
+        month_state["ma50_deviation_sent"] = True
+        _append_close_record(day_state, week_state, month_state, SignalType.MA50_DEVIATION, None, None, confirmed_at)
+        changed = True
+
+    return changed
+
+
+def _add_confirmed_drop_levels(
+    day_state: dict,
+    aggregate_states: list[dict],
+    prices_key: str,
+    count_key: str,
+    signal_type: SignalType,
+    confirmed_count: int,
+    initial_base: float,
+    drop_pct: float,
+    confirmed_at: str,
+    price_owner: dict | None = None,
+) -> bool:
+    owner = price_owner if price_owner is not None else day_state
+    prices = owner.setdefault(prices_key, [])
+    changed = False
+    while len(prices) < confirmed_count:
+        base = float(prices[-1]) if prices else initial_base
+        trigger_price = base * (1.0 - drop_pct)
+        count = len(prices) + 1
+        prices.append(trigger_price)
+        for aggregate_state in aggregate_states:
+            aggregate_state[count_key] = int(aggregate_state.get(count_key, 0)) + 1
+        _append_close_record(day_state, aggregate_states[0], aggregate_states[1], signal_type, count, trigger_price, confirmed_at)
+        changed = True
+    return changed
+
+
+def _append_close_record(
+    day_state: dict,
+    week_state: dict,
+    month_state: dict,
+    signal_type: SignalType,
+    count: int | None,
+    trigger_price: float | None,
+    confirmed_at: str,
+) -> None:
+    record = {
+        "signal_type": signal_type.value,
+        "sent_at": confirmed_at,
+        "count": count,
+        "trigger_price": trigger_price,
+        "source": "close_summary",
+    }
+    day_state.setdefault("close_confirmed_signals", []).append(record)
+    week_state.setdefault("trigger_records", []).append(record)
+    month_state.setdefault("trigger_records", []).append(record)
 
 
 def count_day_signals(day_state: dict, signal_type: SignalType) -> int:
