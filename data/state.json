@@ -146,6 +146,12 @@
               "trigger_price": 723.1910119628906
             }
           ]
+        },
+        "2026-06-24": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -429,6 +435,12 @@
               "trigger_price": 733.2241644287109
             }
           ]
+        },
+        "2026-06-24": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
