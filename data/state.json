@@ -183,6 +183,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-07-01": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -263,6 +269,17 @@
             }
           ],
           "weekly_base_count": 4
+        },
+        "2026-07": {
+          "daily_drop_count": 0,
+          "ma20_deviation_sent": false,
+          "ma50_deviation_sent": false,
+          "monthly_base_close": 736.4000244140625,
+          "monthly_drop_count": 0,
+          "monthly_summary_sent": false,
+          "monthly_trigger_prices": [],
+          "trigger_records": [],
+          "weekly_base_count": 0
         }
       },
       "weeks": {
@@ -526,6 +543,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-07-01": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -594,6 +617,17 @@
             }
           ],
           "weekly_base_count": 4
+        },
+        "2026-07": {
+          "daily_drop_count": 0,
+          "ma20_deviation_sent": false,
+          "ma50_deviation_sent": false,
+          "monthly_base_close": 746.77001953125,
+          "monthly_drop_count": 0,
+          "monthly_summary_sent": false,
+          "monthly_trigger_prices": [],
+          "trigger_records": [],
+          "weekly_base_count": 0
         }
       },
       "weeks": {
