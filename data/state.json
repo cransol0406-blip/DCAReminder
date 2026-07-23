@@ -332,7 +332,7 @@
         },
         "2026-07-23": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             691.2429760742187
           ],
@@ -942,7 +942,7 @@
         },
         "2026-07-23": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             736.1988235473633
           ],
