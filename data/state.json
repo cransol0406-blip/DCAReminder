@@ -329,6 +329,21 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-07-23": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": false,
+          "daily_trigger_prices": [
+            691.2429760742187
+          ],
+          "intraday_signals": [
+            {
+              "count": 1,
+              "sent_at": "2026-07-23T11:01:33.566267-04:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 691.2429760742187
+            }
+          ]
         }
       },
       "months": {
@@ -411,7 +426,7 @@
           "weekly_base_count": 4
         },
         "2026-07": {
-          "daily_drop_count": 4,
+          "daily_drop_count": 5,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_base_close": 736.4000244140625,
@@ -460,6 +475,12 @@
               "sent_at": "2026-07-20T09:31:17.226481-04:00",
               "signal_type": "weekly_base",
               "trigger_price": null
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-07-23T11:01:33.566267-04:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 691.2429760742187
             }
           ],
           "weekly_base_count": 3
@@ -614,7 +635,7 @@
           "weekly_summary_sent": true
         },
         "2026-W30": {
-          "daily_drop_count": 0,
+          "daily_drop_count": 1,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_drop_count": 0,
@@ -624,6 +645,12 @@
               "sent_at": "2026-07-20T09:31:17.226481-04:00",
               "signal_type": "weekly_base",
               "trigger_price": null
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-07-23T11:01:33.566267-04:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 691.2429760742187
             }
           ],
           "weekly_base_count": 1,
@@ -910,6 +937,12 @@
         "2026-07-22": {
           "close_confirmed_signals": [],
           "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
+        },
+        "2026-07-23": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": false,
           "daily_trigger_prices": [],
           "intraday_signals": []
         }
