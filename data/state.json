@@ -347,7 +347,7 @@
         },
         "2026-07-24": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
@@ -682,7 +682,7 @@
           ],
           "weekly_base_count": 1,
           "weekly_base_sent": true,
-          "weekly_summary_sent": false
+          "weekly_summary_sent": true
         }
       }
     },
@@ -984,7 +984,7 @@
         },
         "2026-07-24": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
         }
@@ -1232,7 +1232,7 @@
           ],
           "weekly_base_count": 1,
           "weekly_base_sent": true,
-          "weekly_summary_sent": false
+          "weekly_summary_sent": true
         }
       }
     }
