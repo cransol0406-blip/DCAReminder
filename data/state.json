@@ -360,7 +360,7 @@
         },
         "2026-07-27": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             678.1208215332031
           ],
@@ -1046,7 +1046,7 @@
         },
         "2026-07-27": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
