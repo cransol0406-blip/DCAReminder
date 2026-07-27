@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import math
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+import pandas_market_calendars as mcal
 import yfinance as yf
 
 from dca_reminder.rules import MarketSnapshot
@@ -73,14 +74,15 @@ def fetch_market_data(symbol: str, now: datetime | None = None, include_current_
         daily = daily.drop(columns=["Adj Close"])
 
     completed_daily = daily[daily.index.date < timestamp.date()]
-    if len(completed_daily) < 50:
+    completed_closes = completed_daily["Close"].dropna()
+    if len(completed_closes) < 50:
         raise RuntimeError(f"Not enough completed daily bars for {symbol}")
 
-    previous_close = float(completed_daily["Close"].iloc[-1])
+    previous_close = _previous_close(symbol, daily, timestamp)
     previous_month_close = _previous_month_close(symbol, daily, timestamp)
     trailing_30d_base_close = _trailing_30d_base_close(symbol, daily, timestamp)
-    intraday_ma20 = float(completed_daily["Close"].tail(20).mean())
-    intraday_ma50 = float(completed_daily["Close"].tail(50).mean())
+    intraday_ma20 = float(completed_closes.tail(20).mean())
+    intraday_ma50 = float(completed_closes.tail(50).mean())
     today_daily = daily[daily.index.date == timestamp.date()]
     close_price = None
     close_ma20 = None
@@ -121,6 +123,29 @@ def _normalize_history(history: pd.DataFrame) -> pd.DataFrame:
     else:
         normalized.index = normalized.index.tz_convert(ET)
     return normalized.sort_index()
+
+
+def _previous_close(symbol: str, daily: pd.DataFrame, timestamp: datetime) -> float:
+    previous_day = _previous_trading_day(timestamp)
+    previous_daily = daily[daily.index.date == previous_day]
+    if previous_daily.empty:
+        raise RuntimeError(f"Previous trading-day close for {symbol} on {previous_day} is not available")
+    close = _to_valid_price(previous_daily["Close"].iloc[-1])
+    if close is None:
+        raise RuntimeError(f"Previous trading-day close for {symbol} on {previous_day} is invalid")
+    return close
+
+
+def _previous_trading_day(timestamp: datetime) -> date:
+    current_day = timestamp.astimezone(ET).date()
+    nyse = mcal.get_calendar("NYSE")
+    schedule = nyse.schedule(
+        start_date=(current_day - timedelta(days=14)).isoformat(),
+        end_date=(current_day - timedelta(days=1)).isoformat(),
+    )
+    if schedule.empty:
+        raise RuntimeError(f"No previous NYSE trading day found before {current_day}")
+    return schedule.index[-1].date()
 
 
 def _previous_month_close(symbol: str, daily: pd.DataFrame, timestamp: datetime) -> float:

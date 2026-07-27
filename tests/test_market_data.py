@@ -5,8 +5,9 @@ import math
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+import pytest
 
-from dca_reminder.market_data import MarketData, _previous_month_close, _trailing_30d_base_close
+from dca_reminder.market_data import MarketData, _previous_close, _previous_month_close, _trailing_30d_base_close
 
 
 ET = ZoneInfo("America/New_York")
@@ -28,6 +29,28 @@ def test_previous_month_close_uses_split_adjusted_close_not_adj_close():
     )
     close = _previous_month_close("SPY", daily, datetime(2026, 6, 2, tzinfo=ET))
     assert close == 100.0
+
+
+def test_previous_close_requires_expected_previous_trading_day():
+    index = pd.DatetimeIndex(
+        [
+            datetime(2026, 7, 23, tzinfo=ET),
+            datetime(2026, 7, 24, tzinfo=ET),
+        ]
+    )
+    daily = pd.DataFrame({"Close": [691.96, 684.23]}, index=index)
+
+    close = _previous_close("QQQ", daily, datetime(2026, 7, 27, 10, 41, tzinfo=ET))
+
+    assert close == 684.23
+
+
+def test_previous_close_rejects_stale_history_missing_previous_trading_day():
+    index = pd.DatetimeIndex([datetime(2026, 7, 23, tzinfo=ET)])
+    daily = pd.DataFrame({"Close": [691.96]}, index=index)
+
+    with pytest.raises(RuntimeError, match="2026-07-24"):
+        _previous_close("QQQ", daily, datetime(2026, 7, 27, 10, 41, tzinfo=ET))
 
 
 def test_trailing_30d_base_close_uses_exact_trading_day_when_available():
