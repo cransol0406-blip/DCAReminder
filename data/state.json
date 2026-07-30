@@ -409,6 +409,12 @@
             661.9801904296875
           ],
           "intraday_signals": []
+        },
+        "2026-07-30": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -1134,6 +1140,12 @@
           "daily_trigger_prices": [
             729.7470855712891
           ],
+          "intraday_signals": []
+        },
+        "2026-07-30": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
           "intraday_signals": []
         }
       },
