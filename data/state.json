@@ -461,7 +461,7 @@
         },
         "2026-08-10": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
@@ -1307,7 +1307,7 @@
         },
         "2026-08-10": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
