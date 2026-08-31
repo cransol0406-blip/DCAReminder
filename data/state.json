@@ -572,7 +572,7 @@
         },
         "2026-08-31": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
@@ -762,7 +762,7 @@
           "ma50_deviation_sent": false,
           "monthly_base_close": 687.989990234375,
           "monthly_drop_count": 0,
-          "monthly_summary_sent": false,
+          "monthly_summary_sent": true,
           "monthly_trigger_prices": [],
           "trigger_records": [
             {
@@ -1598,7 +1598,7 @@
         },
         "2026-08-31": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": [
             {
@@ -1732,7 +1732,7 @@
           "ma50_deviation_sent": false,
           "monthly_base_close": 747.030029296875,
           "monthly_drop_count": 0,
-          "monthly_summary_sent": false,
+          "monthly_summary_sent": true,
           "monthly_trigger_prices": [],
           "trigger_records": [
             {
