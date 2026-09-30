@@ -730,6 +730,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-09-30": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -952,7 +958,7 @@
           "ma50_deviation_sent": false,
           "monthly_base_close": 716.760009765625,
           "monthly_drop_count": 0,
-          "monthly_summary_sent": false,
+          "monthly_summary_sent": true,
           "monthly_trigger_prices": [],
           "trigger_records": [
             {
@@ -2008,6 +2014,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-09-30": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -2174,7 +2186,7 @@
           "ma50_deviation_sent": false,
           "monthly_base_close": 767.0499877929688,
           "monthly_drop_count": 0,
-          "monthly_summary_sent": false,
+          "monthly_summary_sent": true,
           "monthly_trigger_prices": [],
           "trigger_records": [
             {
