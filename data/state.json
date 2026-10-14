@@ -807,7 +807,7 @@
         },
         "2026-10-14": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             728.6986071777344
           ],
@@ -2244,7 +2244,7 @@
         },
         "2026-10-14": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
         }
