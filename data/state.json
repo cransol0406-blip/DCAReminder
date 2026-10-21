@@ -859,6 +859,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-10-21": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -2349,6 +2355,12 @@
           ]
         },
         "2026-10-20": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
+        },
+        "2026-10-21": {
           "close_confirmed_signals": [],
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
