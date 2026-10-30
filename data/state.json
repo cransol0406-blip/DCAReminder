@@ -930,6 +930,12 @@
               "sent_at": "2026-10-30T09:31:18.595854-04:00",
               "signal_type": "daily_drop",
               "trigger_price": 701.0332263183593
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-10-30T13:51:04.174103-04:00",
+              "signal_type": "monthly_drop",
+              "trigger_price": 687.9861181640624
             }
           ]
         }
@@ -1189,9 +1195,11 @@
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_base_close": 739.77001953125,
-          "monthly_drop_count": 0,
+          "monthly_drop_count": 1,
           "monthly_summary_sent": false,
-          "monthly_trigger_prices": [],
+          "monthly_trigger_prices": [
+            687.9861181640624
+          ],
           "trigger_records": [
             {
               "count": null,
@@ -1240,6 +1248,12 @@
               "sent_at": "2026-10-30T09:31:18.595854-04:00",
               "signal_type": "daily_drop",
               "trigger_price": 701.0332263183593
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-10-30T13:51:04.174103-04:00",
+              "signal_type": "monthly_drop",
+              "trigger_price": 687.9861181640624
             }
           ],
           "weekly_base_count": 4
@@ -1684,7 +1698,7 @@
           "daily_drop_count": 1,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
-          "monthly_drop_count": 0,
+          "monthly_drop_count": 1,
           "trigger_records": [
             {
               "count": null,
@@ -1697,6 +1711,12 @@
               "sent_at": "2026-10-30T09:31:18.595854-04:00",
               "signal_type": "daily_drop",
               "trigger_price": 701.0332263183593
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-10-30T13:51:04.174103-04:00",
+              "signal_type": "monthly_drop",
+              "trigger_price": 687.9861181640624
             }
           ],
           "weekly_base_count": 1,
