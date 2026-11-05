@@ -973,7 +973,7 @@
         },
         "2026-11-05": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             678.1110119628906,
             664.5487917236328,
@@ -2738,7 +2738,7 @@
         },
         "2026-11-05": {
           "close_confirmed_signals": [],
-          "daily_summary_sent": false,
+          "daily_summary_sent": true,
           "daily_trigger_prices": [
             755.3078475952149,
             743.9782298812867
