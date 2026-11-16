@@ -1055,13 +1055,21 @@
         "2026-11-16": {
           "close_confirmed_signals": [],
           "daily_summary_sent": false,
-          "daily_trigger_prices": [],
+          "daily_trigger_prices": [
+            666.2922143554688
+          ],
           "intraday_signals": [
             {
               "count": null,
               "sent_at": "2026-11-16T09:31:29.429047-05:00",
               "signal_type": "weekly_base",
               "trigger_price": null
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-16T10:05:49.821030-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 666.2922143554688
             }
           ]
         }
@@ -1391,7 +1399,7 @@
           "weekly_base_count": 4
         },
         "2026-11": {
-          "daily_drop_count": 4,
+          "daily_drop_count": 5,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_base_close": 690.489990234375,
@@ -1440,6 +1448,12 @@
               "sent_at": "2026-11-16T09:31:29.429047-05:00",
               "signal_type": "weekly_base",
               "trigger_price": null
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-16T10:05:49.821030-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 666.2922143554688
             }
           ],
           "weekly_base_count": 3
@@ -1974,7 +1988,7 @@
           "weekly_summary_sent": true
         },
         "2026-W47": {
-          "daily_drop_count": 0,
+          "daily_drop_count": 1,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_drop_count": 0,
@@ -1984,6 +1998,12 @@
               "sent_at": "2026-11-16T09:31:29.429047-05:00",
               "signal_type": "weekly_base",
               "trigger_price": null
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-16T10:05:49.821030-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 666.2922143554688
             }
           ],
           "weekly_base_count": 1,
