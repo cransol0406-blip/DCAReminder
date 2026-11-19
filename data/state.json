@@ -1093,6 +1093,12 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-11-19": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": false,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -3018,6 +3024,21 @@
           "daily_summary_sent": true,
           "daily_trigger_prices": [],
           "intraday_signals": []
+        },
+        "2026-11-19": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": false,
+          "daily_trigger_prices": [
+            719.2470120239258
+          ],
+          "intraday_signals": [
+            {
+              "count": 1,
+              "sent_at": "2026-11-19T12:05:48.014841-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 719.2470120239258
+            }
+          ]
         }
       },
       "months": {
@@ -3263,7 +3284,7 @@
           "weekly_base_count": 4
         },
         "2026-11": {
-          "daily_drop_count": 4,
+          "daily_drop_count": 5,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_base_close": 755.719970703125,
@@ -3312,6 +3333,12 @@
               "sent_at": "2026-11-17T10:55:52.085644-05:00",
               "signal_type": "daily_drop",
               "trigger_price": 728.8507620239258
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-19T12:05:48.014841-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 719.2470120239258
             }
           ],
           "weekly_base_count": 3
@@ -3762,7 +3789,7 @@
           "weekly_summary_sent": true
         },
         "2026-W47": {
-          "daily_drop_count": 2,
+          "daily_drop_count": 3,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_drop_count": 0,
@@ -3784,6 +3811,12 @@
               "sent_at": "2026-11-17T10:55:52.085644-05:00",
               "signal_type": "daily_drop",
               "trigger_price": 728.8507620239258
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-19T12:05:48.014841-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 719.2470120239258
             }
           ],
           "weekly_base_count": 1,
