@@ -3117,8 +3117,17 @@
         "2026-11-20": {
           "close_confirmed_signals": [],
           "daily_summary_sent": false,
-          "daily_trigger_prices": [],
-          "intraday_signals": []
+          "daily_trigger_prices": [
+            705.1319451904296
+          ],
+          "intraday_signals": [
+            {
+              "count": 1,
+              "sent_at": "2026-11-20T11:05:51.135901-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 705.1319451904296
+            }
+          ]
         }
       },
       "months": {
@@ -3364,7 +3373,7 @@
           "weekly_base_count": 4
         },
         "2026-11": {
-          "daily_drop_count": 5,
+          "daily_drop_count": 6,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_base_close": 755.719970703125,
@@ -3427,6 +3436,12 @@
               "sent_at": "2026-11-19T15:01:34.910145-05:00",
               "signal_type": "monthly_drop",
               "trigger_price": 717.9339721679687
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-20T11:05:51.135901-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 705.1319451904296
             }
           ],
           "weekly_base_count": 3
@@ -3877,7 +3892,7 @@
           "weekly_summary_sent": true
         },
         "2026-W47": {
-          "daily_drop_count": 3,
+          "daily_drop_count": 4,
           "ma20_deviation_sent": false,
           "ma50_deviation_sent": false,
           "monthly_drop_count": 1,
@@ -3911,6 +3926,12 @@
               "sent_at": "2026-11-19T15:01:34.910145-05:00",
               "signal_type": "monthly_drop",
               "trigger_price": 717.9339721679687
+            },
+            {
+              "count": 1,
+              "sent_at": "2026-11-20T11:05:51.135901-05:00",
+              "signal_type": "daily_drop",
+              "trigger_price": 705.1319451904296
             }
           ],
           "weekly_base_count": 1,
