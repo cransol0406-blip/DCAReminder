@@ -1186,6 +1186,12 @@
               "trigger_price": 612.8312165527344
             }
           ]
+        },
+        "2026-11-27": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -2243,7 +2249,7 @@
           ],
           "weekly_base_count": 1,
           "weekly_base_sent": true,
-          "weekly_summary_sent": false
+          "weekly_summary_sent": true
         }
       }
     },
@@ -3310,6 +3316,12 @@
               "trigger_price": 697.3783539245605
             }
           ]
+        },
+        "2026-11-27": {
+          "close_confirmed_signals": [],
+          "daily_summary_sent": true,
+          "daily_trigger_prices": [],
+          "intraday_signals": []
         }
       },
       "months": {
@@ -4189,7 +4201,7 @@
           ],
           "weekly_base_count": 1,
           "weekly_base_sent": true,
-          "weekly_summary_sent": false
+          "weekly_summary_sent": true
         }
       }
     }
